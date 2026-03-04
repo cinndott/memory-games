@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Trò Chơi Trí Nhớ — Cho Bà Ngoại</title>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-main: #FFF8F0;
+    --bg-card: #FFFFFF;
+    --accent-warm: #E8734A;
+    --accent-gold: #F2A541;
+    --accent-green: #5DB075;
+    --accent-pink: #E87EA1;
+    --accent-sky: #5BA4CF;
+    --accent-lavender: #9B8EC4;
+    --text-dark: #3D2C2C;
+    --text-mid: #6B5050;
+    --text-light: #9A8080;
+    --shadow-soft: 0 4px 20px rgba(100,60,60,0.08);
+    --shadow-card: 0 6px 24px rgba(100,60,60,0.12);
+    --radius: 20px;
+  }
+
+  html, body {
+    width: 100%; min-height: 100vh; min-height: -webkit-fill-available;
+    font-family: 'Quicksand', sans-serif;
+    background: var(--bg-main);
+    color: var(--text-dark);
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    user-select: none;
+  }
+
+  /* ===== Decorative background ===== */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 600px 400px at 10% 20%, rgba(232,115,74,0.06), transparent),
+      radial-gradient(ellipse 500px 500px at 90% 80%, rgba(93,176,117,0.06), transparent),
+      radial-gradient(ellipse 400px 300px at 50% 10%, rgba(242,165,65,0.05), transparent);
+  }
+
+  .app { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; padding: 24px 16px 40px; }
+
+  /* ===== Header ===== */
+  .header {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .header h1 {
+    font-family: 'Baloo 2', cursive;
+    font-size: clamp(32px, 6vw, 48px);
+    color: var(--accent-warm);
+    line-height: 1.2;
+    letter-spacing: -0.5px;
+  }
+  .header .subtitle {
+    font-size: clamp(16px, 3vw, 20px);
+    color: var(--text-mid);
+    margin-top: 4px;
+    font-weight: 500;
+  }
+
+  /* ===== Menu Screen ===== */
+  .menu-screen { text-align: center; padding-top: 20px; }
+
+  .menu-choice-label {
+    font-size: clamp(20px, 4vw, 26px);
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 24px;
+  }
+
+  .theme-buttons {
+    display: flex; flex-wrap: wrap;
+    gap: 20px; justify-content: center;
+    margin-bottom: 36px;
+  }
+  .theme-btn {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    width: 180px; height: 180px;
+    border: 3px solid transparent;
+    border-radius: var(--radius);
+    background: var(--bg-card);
+    box-shadow: var(--shadow-soft);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    font-family: 'Quicksand', sans-serif;
+  }
+  .theme-btn:hover, .theme-btn:active {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-card);
+  }
+  .theme-btn .icon { font-size: 64px; line-height: 1; margin-bottom: 8px; }
+  .theme-btn .label {
+    font-size: 20px; font-weight: 700; color: var(--text-dark);
+  }
+  .theme-btn.animals { border-color: var(--accent-gold); }
+  .theme-btn.animals:hover { background: #FFF8EC; }
+  .theme-btn.flowers { border-color: var(--accent-pink); }
+  .theme-btn.flowers:hover { background: #FFF0F4; }
+  .theme-btn.clothing { border-color: var(--accent-lavender); }
+  .theme-btn.clothing:hover { background: #F5F0FF; }
+  .theme-btn.shapes { border-color: var(--accent-sky); }
+  .theme-btn.shapes:hover { background: #EEF6FF; }
+
+  /* Difficulty */
+  .diff-section { margin-bottom: 10px; }
+  .diff-label {
+    font-size: clamp(18px, 3.5vw, 22px);
+    font-weight: 700; color: var(--text-dark);
+    margin-bottom: 16px;
+  }
+  .diff-buttons { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .diff-btn {
+    padding: 14px 28px;
+    border-radius: 50px;
+    border: 2px solid var(--accent-sky);
+    background: white;
+    font-family: 'Quicksand', sans-serif;
+    font-size: 18px; font-weight: 700;
+    color: var(--accent-sky);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .diff-btn:hover, .diff-btn.active {
+    background: var(--accent-sky);
+    color: white;
+  }
+
+  /* ===== Game Screen ===== */
+  .game-screen { display: none; }
+  .game-screen.visible { display: block; }
+
+  .game-top-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px; flex-wrap: wrap; gap: 10px;
+  }
+  .back-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 10px 20px;
+    border-radius: 50px;
+    border: 2px solid var(--text-light);
+    background: white;
+    font-family: 'Quicksand', sans-serif;
+    font-size: 16px; font-weight: 700;
+    color: var(--text-mid);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .back-btn:hover { border-color: var(--accent-warm); color: var(--accent-warm); }
+
+  .score-display {
+    font-size: clamp(18px, 3.5vw, 24px);
+    font-weight: 700;
+    color: var(--accent-green);
+    background: rgba(93,176,117,0.1);
+    padding: 8px 20px;
+    border-radius: 50px;
+  }
+
+  /* ===== Card Grid ===== */
+  .card-grid {
+    display: grid;
+    gap: 14px;
+    justify-content: center;
+    margin: 0 auto;
+  }
+  .card-grid.grid-easy { grid-template-columns: repeat(2, 1fr); max-width: 340px; }
+  .card-grid.grid-medium { grid-template-columns: repeat(3, 1fr); max-width: 480px; }
+  .card-grid.grid-hard { grid-template-columns: repeat(4, 1fr); max-width: 560px; }
+  .card-grid.grid-expert { grid-template-columns: repeat(4, 1fr); max-width: 560px; }
+
+  /* ===== Individual Card ===== */
+  .card {
+    aspect-ratio: 1;
+    perspective: 800px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .card-inner {
+    position: relative;
+    width: 100%; height: 100%;
+    transition: transform 0.5s ease;
+    transform-style: preserve-3d;
+  }
+  .card.flipped .card-inner { transform: rotateY(180deg); }
+
+  .card-face {
+    position: absolute; inset: 0;
+    border-radius: var(--radius);
+    backface-visibility: hidden;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    box-shadow: var(--shadow-soft);
+    overflow: hidden;
+  }
+  .card-front {
+    background: linear-gradient(145deg, #F9E8D8, #FDDEC0);
+    border: 3px solid #F0D0B0;
+  }
+  .card-front .card-pattern {
+    font-size: clamp(36px, 8vw, 56px);
+    opacity: 0.35;
+  }
+  .card-back {
+    transform: rotateY(180deg);
+    background: var(--bg-card);
+    border: 3px solid #E8DDD4;
+    padding: 8px;
+  }
+  .card-back .emoji {
+    font-size: clamp(40px, 10vw, 64px);
+    line-height: 1;
+  }
+  .card-back .name {
+    font-size: clamp(13px, 2.5vw, 17px);
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-top: 4px;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  /* Matched state */
+  .card.matched .card-back {
+    border-color: var(--accent-green);
+    background: linear-gradient(145deg, #E8F8EE, #D0F0DC);
+  }
+  .card.matched .card-back::after {
+    content: '✓';
+    position: absolute; top: 6px; right: 10px;
+    font-size: 20px; color: var(--accent-green); font-weight: 800;
+  }
+
+  /* ===== Win Overlay ===== */
+  .win-overlay {
+    display: none;
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(255,248,240,0.92);
+    backdrop-filter: blur(6px);
+    flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; padding: 30px;
+    animation: fadeIn 0.5s ease;
+  }
+  .win-overlay.visible { display: flex; }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .win-emoji { font-size: 80px; margin-bottom: 16px; animation: bounce 1s ease infinite; }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-16px); }
+  }
+  .win-title {
+    font-family: 'Baloo 2', cursive;
+    font-size: clamp(32px, 7vw, 52px);
+    color: var(--accent-warm);
+    line-height: 1.2;
+  }
+  .win-sub {
+    font-size: clamp(18px, 4vw, 24px);
+    color: var(--text-mid); margin: 8px 0 28px;
+  }
+  .win-buttons { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+  .win-btn {
+    padding: 16px 36px;
+    border-radius: 50px;
+    border: none;
+    font-family: 'Quicksand', sans-serif;
+    font-size: 20px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .win-btn.replay { background: var(--accent-green); color: white; }
+  .win-btn.replay:hover { background: #4a9963; }
+  .win-btn.menu-go { background: white; color: var(--accent-warm); border: 2px solid var(--accent-warm); }
+  .win-btn.menu-go:hover { background: #FFF0E8; }
+
+  /* ===== Encouragement Toast ===== */
+  .toast {
+    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
+    background: var(--accent-green); color: white;
+    padding: 14px 30px; border-radius: 50px;
+    font-size: 20px; font-weight: 700;
+    box-shadow: 0 6px 20px rgba(93,176,117,0.3);
+    z-index: 50;
+    opacity: 0;
+    transition: all 0.4s ease;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 500px) {
+    .app { padding: 16px 10px 30px; }
+    .card-grid { gap: 10px; }
+    .theme-btn { width: 150px; height: 150px; }
+  }
+
+  /* Ensure no text selection on mobile */
+  * { -webkit-user-select: none; user-select: none; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- HEADER (always visible) -->
+  <div class="header">
+    <h1>🌸 Trò Chơi Trí Nhớ 🌸</h1>
+    <div class="subtitle">Lật thẻ để tìm cặp giống nhau!</div>
+  </div>
+
+  <!-- MENU SCREEN -->
+  <div class="menu-screen" id="menuScreen">
+    <div class="menu-choice-label">Chọn chủ đề:</div>
+    <div class="theme-buttons">
+      <button class="theme-btn animals" onclick="selectTheme('animals')">
+        <span class="icon">🐕</span>
+        <span class="label">Động Vật</span>
+      </button>
+      <button class="theme-btn flowers" onclick="selectTheme('flowers')">
+        <span class="icon">🌷</span>
+        <span class="label">Hoa & Cây</span>
+      </button>
+      <button class="theme-btn clothing" onclick="selectTheme('clothing')">
+        <span class="icon">👗</span>
+        <span class="label">Quần Áo</span>
+      </button>
+      <button class="theme-btn shapes" onclick="selectTheme('shapes')">
+        <span class="icon">🌍</span>
+        <span class="label">Hình Học</span>
+      </button>
+    </div>
+
+    <div class="diff-section">
+      <div class="diff-label">Chọn mức độ:</div>
+      <div class="diff-buttons">
+        <button class="diff-btn active" data-diff="easy" onclick="selectDifficulty('easy', this)">Dễ (4 thẻ)</button>
+        <button class="diff-btn" data-diff="medium" onclick="selectDifficulty('medium', this)">Vừa (6 thẻ)</button>
+        <button class="diff-btn" data-diff="hard" onclick="selectDifficulty('hard', this)">Khó (8 thẻ)</button>
+        <button class="diff-btn" data-diff="expert" onclick="selectDifficulty('expert', this)">Rất Khó (10 thẻ)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div class="game-screen" id="gameScreen">
+    <div class="game-top-bar">
+      <button class="back-btn" onclick="goToMenu()">← Trở về</button>
+      <div class="score-display" id="scoreDisplay">Đã tìm: 0 / 0</div>
+    </div>
+    <div class="card-grid" id="cardGrid"></div>
+  </div>
+</div>
+
+<!-- WIN OVERLAY -->
+<div class="win-overlay" id="winOverlay">
+  <div class="win-emoji">🎉</div>
+  <div class="win-title">Giỏi lắm!</div>
+  <div class="win-sub" id="winSub">Bà Ngoại đã tìm được tất cả!</div>
+  <div class="win-buttons">
+    <button class="win-btn replay" onclick="replayGame()">🔄 Chơi lại</button>
+    <button class="win-btn menu-go" onclick="goToMenu()">🏠 Chọn chủ đề khác</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== DATA =====
+const ANIMALS = [
+  { emoji: '🐕', name: 'Con Chó' },
+  { emoji: '🐈', name: 'Con Mèo' },
+  { emoji: '🐄', name: 'Con Bò' },
+  { emoji: '🐖', name: 'Con Heo' },
+  { emoji: '🐓', name: 'Con Gà' },
+  { emoji: '🦆', name: 'Con Vịt' },
+  { emoji: '🐇', name: 'Con Thỏ' },
+  { emoji: '🐟', name: 'Con Cá' },
+  { emoji: '🦋', name: 'Con Bướm' },
+  { emoji: '🐢', name: 'Con Rùa' },
+  { emoji: '🐎', name: 'Con Ngựa' },
+  { emoji: '🐘', name: 'Con Voi' },
+];
+
+const FLOWERS = [
+  { emoji: '🌹', name: 'Hoa Hồng' },
+  { emoji: '🌷', name: 'Hoa Tulip' },
+  { emoji: '🌻', name: 'Hoa Hướng Dương' },
+  { emoji: '🌸', name: 'Hoa Đào' },
+  { emoji: '🪷', name: 'Hoa Sen' },
+  { emoji: '🌺', name: 'Hoa Dâm Bụt' },
+  { emoji: '🌼', name: 'Hoa Cúc' },
+  { emoji: '💐', name: 'Bó Hoa' },
+  { emoji: '🌿', name: 'Cây Xanh' },
+  { emoji: '🎋', name: 'Cây Tre' },
+  { emoji: '🍀', name: 'Cỏ May Mắn' },
+  { emoji: '🌴', name: 'Cây Dừa' },
+];
+
+const CLOTHING = [
+  { emoji: '👗', name: 'Váy Đầm' },
+  { emoji: '👒', name: 'Mũ' },
+  { emoji: '👞', name: 'Giày' },
+  { emoji: '🧤', name: 'Găng Tay' },
+  { emoji: '🧣', name: 'Khăn Quàng' },
+  { emoji: '👕', name: 'Áo Phông' },
+  { emoji: '👖', name: 'Quần Dài' },
+  { emoji: '🧦', name: 'Tất' },
+  { emoji: '👜', name: 'Túi Xách' },
+  { emoji: '👓', name: 'Kính Mắt' },
+  { emoji: '🩴', name: 'Dép' },
+  { emoji: '🧥', name: 'Áo Khoác' },
+];
+
+const SHAPES = [
+  { emoji: '🔴', name: 'Hình Tròn' },
+  { emoji: '🟦', name: 'Hình Vuông' },
+  { emoji: '🔺', name: 'Hình Tam Giác' },
+  { emoji: '⬠', name: 'Hình Ngũ Giác' },
+  { emoji: '⭐', name: 'Hình Ngôi Sao' },
+  { emoji: '💎', name: 'Hình Thoi' },
+  { emoji: '🟡', name: 'Hình Tròn Vàng' },
+  { emoji: '💜', name: 'Hình Tim' },
+  { emoji: '⬛', name: 'Hình Vuông Đen' },
+  { emoji: '🔷', name: 'Hình Thoi Xanh' },
+  { emoji: '🟢', name: 'Hình Tròn Xanh' },
+  { emoji: '🔶', name: 'Hình Thoi Cam' },
+];
+
+const ENCOURAGEMENTS = [
+  'Tuyệt vời! 👏',
+  'Giỏi quá! 🌟',
+  'Đúng rồi! ✨',
+  'Hay lắm! 💖',
+  'Xuất sắc! 🎉',
+  'Tài giỏi! 🌈',
+];
+
+// ===== STATE =====
+let currentTheme = 'animals';
+let currentDifficulty = 'easy';
+let cards = [];
+let flippedCards = [];
+let matchedPairs = 0;
+let totalPairs = 0;
+let isLocked = false;
+
+// ===== DIFFICULTY CONFIG =====
+const DIFF_CONFIG = {
+  easy:   { pairs: 2, gridClass: 'grid-easy' },
+  medium: { pairs: 3, gridClass: 'grid-medium' },
+  hard:   { pairs: 4, gridClass: 'grid-hard' },
+  expert: { pairs: 5, gridClass: 'grid-expert' },
+};
+
+// ===== FUNCTIONS =====
+function selectTheme(theme) {
+  currentTheme = theme;
+  startGame();
+}
+
+function selectDifficulty(diff, btn) {
+  currentDifficulty = diff;
+  document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function startGame() {
+  const config = DIFF_CONFIG[currentDifficulty];
+  const data = { animals: ANIMALS, flowers: FLOWERS, clothing: CLOTHING, shapes: SHAPES }[currentTheme];
+
+  // Pick random items
+  const shuffled = [...data].sort(() => Math.random() - 0.5);
+  const selected = shuffled.slice(0, config.pairs);
+
+  // Create pairs and shuffle
+  cards = [...selected, ...selected]
+    .map((item, i) => ({ ...item, id: i, uid: Math.random() }))
+    .sort(() => Math.random() - 0.5);
+
+  matchedPairs = 0;
+  totalPairs = config.pairs;
+  flippedCards = [];
+  isLocked = false;
+
+  // Switch screens
+  document.getElementById('menuScreen').style.display = 'none';
+  document.getElementById('gameScreen').classList.add('visible');
+  document.getElementById('winOverlay').classList.remove('visible');
+
+  updateScore();
+  renderGrid(config.gridClass);
+}
+
+function renderGrid(gridClass) {
+  const grid = document.getElementById('cardGrid');
+  grid.className = 'card-grid ' + gridClass;
+  grid.innerHTML = '';
+
+  cards.forEach((card, index) => {
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.dataset.index = index;
+    el.innerHTML = `
+      <div class="card-inner">
+        <div class="card-face card-front">
+          <div class="card-pattern">❀</div>
+        </div>
+        <div class="card-face card-back">
+          <div class="emoji">${card.emoji}</div>
+          <div class="name">${card.name}</div>
+        </div>
+      </div>
+    `;
+    el.addEventListener('click', () => flipCard(index, el));
+    grid.appendChild(el);
+  });
+}
+
+function flipCard(index, el) {
+  if (isLocked) return;
+  if (el.classList.contains('flipped') || el.classList.contains('matched')) return;
+
+  el.classList.add('flipped');
+  flippedCards.push({ index, el, card: cards[index] });
+
+  if (flippedCards.length === 2) {
+    isLocked = true;
+    const [a, b] = flippedCards;
+
+    if (a.card.emoji === b.card.emoji) {
+      // Match!
+      setTimeout(() => {
+        a.el.classList.add('matched');
+        b.el.classList.add('matched');
+        matchedPairs++;
+        updateScore();
+        showEncouragement();
+        flippedCards = [];
+        isLocked = false;
+
+        if (matchedPairs === totalPairs) {
+          setTimeout(() => showWin(), 700);
+        }
+      }, 500);
+    } else {
+      // No match — flip back
+      setTimeout(() => {
+        a.el.classList.remove('flipped');
+        b.el.classList.remove('flipped');
+        flippedCards = [];
+        isLocked = false;
+      }, 1000);
+    }
+  }
+}
+
+function updateScore() {
+  document.getElementById('scoreDisplay').textContent =
+    `Đã tìm: ${matchedPairs} / ${totalPairs}`;
+}
+
+function showEncouragement() {
+  const msg = ENCOURAGEMENTS[Math.floor(Math.random() * ENCOURAGEMENTS.length)];
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 1600);
+}
+
+function showWin() {
+  document.getElementById('winOverlay').classList.add('visible');
+}
+
+function replayGame() {
+  document.getElementById('winOverlay').classList.remove('visible');
+  startGame();
+}
+
+function goToMenu() {
+  document.getElementById('winOverlay').classList.remove('visible');
+  document.getElementById('gameScreen').classList.remove('visible');
+  document.getElementById('menuScreen').style.display = '';
+}
+</script>
+</body>
+</html>
